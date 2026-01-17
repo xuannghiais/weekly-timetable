@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Study Plan Optimizer - Refactored Version</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- Global Alert -->
+    <div id="globalAlert" class="global-alert"></div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="loading-spinner">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- ============================================
+         VIEW 1: LOGIN
+         ============================================ -->
+    <div id="loginView" class="view active">
+      <div class="auth-container">
+        <div class="auth-box">
+          <h1>Welcome Back!</h1>
+          <p>Log in to manage your study schedule</p>
+
+          <div class="input-group">
+            <label for="loginEmail">Email</label>
+            <input
+              type="email"
+              id="loginEmail"
+              autocomplete="email"
+              placeholder="Enter your email"
+            />
+            <div class="error-message" id="loginEmailError"></div>
+          </div>
+
+          <div class="input-group">
+            <label for="loginPassword">Password</label>
+            <input
+              type="password"
+              id="loginPassword"
+              autocomplete="current-password"
+              placeholder="Enter your password"
+            />
+            <div class="error-message" id="loginPasswordError"></div>
+          </div>
+
+          <div class="auth-options">
+            <label for="rememberMe">
+              <input type="checkbox" id="rememberMe" checked />
+              Remember me
+            </label>
+            <a href="#" onclick="Handlers.showPasswordReset()"
+              >Forgot password?</a
+            >
+          </div>
+
+          <button class="btn btn-primary" onclick="Handlers.handleLogin()">
+            Log in
+          </button>
+          <button class="btn btn-secondary" onclick="Handlers.loginAsGuest()">
+            Continue as Guest
+          </button>
+
+          <div class="link-text">
+            Don't have an account?
+            <a href="#" onclick="UI.showView('signup')">Sign up</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================
+         VIEW 2: SIGNUP
+         ============================================ -->
+    <div id="signupView" class="view">
+      <div class="auth-container">
+        <div class="auth-box">
+          <h1>Create Account</h1>
+          <p>Sign up to start planning your studies</p>
+
+          <div class="input-group">
+            <label for="signupEmail">Email</label>
+            <input
+              type="email"
+              id="signupEmail"
+              placeholder="Enter your email"
+            />
+            <div class="error-message" id="signupEmailError"></div>
+          </div>
+
+          <div class="input-group">
+            <label for="signupPassword">Password</label>
+            <input
+              type="password"
+              id="signupPassword"
+              placeholder="Create a password (min 8 characters)"
+            />
+            <div class="error-message" id="signupPasswordError"></div>
+          </div>
+
+          <div class="input-group">
+            <label for="signupConfirm">Confirm Password</label>
+            <input
+              type="password"
+              id="signupConfirm"
+              placeholder="Confirm your password"
+            />
+            <div class="error-message" id="signupConfirmError"></div>
+          </div>
+
+          <button class="btn btn-primary" onclick="Handlers.handleSignup()">
+            Sign Up
+          </button>
+          <button class="btn btn-secondary" onclick="UI.showView('login')">
+            Back to Login
+          </button>
+
+          <div class="link-text">
+            Already have an account?
+            <a href="#" onclick="UI.showView('login')">Log in</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================
+         VIEW 3: TIMETABLE (MAIN APP)
+         ============================================ -->
+    <div id="timetableView" class="view">
+      <div class="header">
+        <h1>📅 WEEKLY TIMETABLE</h1>
+        <div class="user-info">
+          Welcome, <span id="displayUsername">Student</span>!
+        </div>
+      </div>
+
+      <div class="main-content">
+        <!-- ============================================
+                 SECTION 1: HOMEPAGE
+                 ============================================ -->
+        <div id="homepageSection" class="section active">
+          <!-- Add Task Form -->
+          <div class="add-task-card">
+            <h3>➕ Add New Task</h3>
+
+            <div class="form-group">
+              <label for="taskTitle">Task Title</label>
+              <input
+                type="text"
+                id="taskTitle"
+                placeholder="e.g., Study Math Chapter 5"
+                maxlength="100"
+              />
+              <div class="error-message" id="taskTitleError"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="taskDuration">Duration (minutes)</label>
+              <input
+                type="number"
+                id="taskDuration"
+                placeholder="e.g., 60"
+                min="1"
+                max="1440"
+              />
+              <div class="error-message" id="taskDurationError"></div>
+            </div>
+
+            <div class="form-group">
+              <label for="taskDay">Day</label>
+              <select id="taskDay">
+                <option value="monday">Monday</option>
+                <option value="tuesday">Tuesday</option>
+                <option value="wednesday">Wednesday</option>
+                <option value="thursday">Thursday</option>
+                <option value="friday">Friday</option>
+                <option value="saturday">Saturday</option>
+                <option value="sunday">Sunday</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="taskStatus">Status</label>
+              <select id="taskStatus">
+                <option value="not-completed">Not Completed</option>
+                <option value="completed">Completed</option>
+                <option value="approaching">Approaching Deadline</option>
+              </select>
+            </div>
+
+            <button class="btn btn-primary" onclick="Handlers.handleAddTask()">
+              Add Task
+            </button>
+          </div>
+
+          <!-- Days Container -->
+          <div id="daysContainer"></div>
+
+          <!-- Status Legend -->
+          <div class="status-legend">
+            <h4>Status Legend</h4>
+            <div class="status-items">
+              <span class="status-item completed">Completed</span>
+              <span class="status-item not-completed">Not Completed</span>
+              <span class="status-item approaching">Approaching</span>
+              <span class="status-item missed">Missed</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================
+                 SECTION 2: CALENDAR
+                 ============================================ -->
+        <div id="calendarSection" class="section">
+          <h2 class="section-title">🗓️ Weekly Overview</h2>
+          <div id="calendarContainer"></div>
+        </div>
+
+        <!-- ============================================
+                 SECTION 3: TO-DO LIST
+                 ============================================ -->
+        <div id="todoSection" class="section">
+          <div class="todo-header">
+            <h2 class="section-title">✅ To-Do List</h2>
+            <span class="missed-badge"
+              >MISSED: <span id="missedCount">0</span></span
+            >
+          </div>
+
+          <div id="deadlineAlerts"></div>
+          <div id="todoContainer"></div>
+        </div>
+
+        <!-- ============================================
+                 SECTION 4: SETTINGS
+                 ============================================ -->
+        <div id="settingsSection" class="section">
+          <h2 class="section-title">⚙️ Settings</h2>
+
+          <div class="settings-card">
+            <div class="settings-group">
+              <label for="dailyLimit">Daily Time Limit (minutes)</label>
+              <input type="number" id="dailyLimit" value="150" min="1" />
+            </div>
+
+            <button
+              class="btn btn-primary"
+              onclick="Handlers.handleUpdateSettings()"
+            >
+              Save Settings
+            </button>
+            <button
+              class="btn btn-danger mt-10"
+              onclick="Handlers.handleClearData()"
+            >
+              Clear All Data
+            </button>
+            <button
+              class="btn btn-secondary-alt mt-10"
+              onclick="Handlers.handleLogout()"
+            >
+              Logout
+            </button>
+          </div>
+
+          <!-- Statistics -->
+          <div class="settings-card mt-10">
+            <h4>📊 Statistics</h4>
+            <div id="statsContainer"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Navigation -->
+      <div class="bottom-nav">
+        <button class="nav-btn active" onclick="UI.showSection('homepage')">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-label">Home</span>
+        </button>
+        <button class="nav-btn" onclick="UI.showSection('calendar')">
+          <span class="nav-icon">🗓️</span>
+          <span class="nav-label">Calendar</span>
+        </button>
+        <button class="nav-btn" onclick="UI.showSection('todo')">
+          <span class="nav-icon">✅</span>
+          <span class="nav-label">To-Do List</span>
+        </button>
+        <button class="nav-btn" onclick="UI.showSection('settings')">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-label">Settings</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ============================================
+         MODAL: DAY DETAIL
+         ============================================ -->
+    <div id="dayDetailModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="modalDayTitle">Day Details</h3>
+          <button class="close-btn" onclick="Modal.close()">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Add Task to This Day -->
+          <div class="add-task-card">
+            <h4>Add Task to This Day</h4>
+
+            <div class="form-group">
+              <label for="modalTaskTitle">Task Title</label>
+              <input
+                type="text"
+                id="modalTaskTitle"
+                placeholder="Task name"
+                maxlength="100"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="modalTaskDuration">Duration (minutes)</label>
+              <input
+                type="number"
+                id="modalTaskDuration"
+                placeholder="Duration"
+                min="1"
+                max="1440"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="modalTaskStatus">Status</label>
+              <select id="modalTaskStatus">
+                <option value="not-completed">Not Completed</option>
+                <option value="completed">Completed</option>
+                <option value="approaching">Approaching</option>
+              </select>
+            </div>
+
+            <button
+              class="btn btn-primary"
+              onclick="Handlers.handleAddTaskToCurrentDay()"
+            >
+              Add Task
+            </button>
+          </div>
+
+          <!-- Session List -->
+          <div class="session-list">
+            <h4>📋 Tasks for This Day</h4>
+            <div id="sessionContainer"></div>
+          </div>
+
+          <div
+            class="error-message show"
+            id="modalErrorMessage"
+            style="display: none; margin-top: 15px"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================
+         MODAL: PASSWORD RESET
+         ============================================ -->
+    <div id="passwordResetModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Reset Password</h3>
+          <button class="close-btn" onclick="Modal.close()">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <p class="modal-hint">
+            Enter your email to receive a password reset link.
+          </p>
+
+          <div class="input-group">
+            <label for="resetEmail">Email</label>
+            <input
+              type="email"
+              id="resetEmail"
+              autocomplete="email"
+              placeholder="Enter your email"
+            />
+            <div class="error-message" id="resetEmailError"></div>
+          </div>
+
+          <button class="btn btn-primary" onclick="Handlers.handlePasswordReset()">
+            Send Reset Link
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Firebase SDKs (Auth + Firestore) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
