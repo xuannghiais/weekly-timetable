@@ -198,12 +198,12 @@
       // ============================================
       // Replace with your Firebase project settings (Firebase Console).
       const FIREBASE_CONFIG = {
-        apiKey: "AIzaSyB3S9oWkQPvfHlGP-oXg12GQ5n9HFUEMos",
-    authDomain: "weekly-timetable-9a81a.firebaseapp.com",
-    projectId: "weekly-timetable-9a81a",
-    storageBucket: "weekly-timetable-9a81a.firebasestorage.app",
-    messagingSenderId: "582600830061",
-    appId: "1:582600830061:web:4d0d4dcfcc4b9e999c2364"
+        apiKey: "AIzaSyBHyEQiN2gDSoogrsPSGauXTlZrNY42oB4",
+        authDomain: "weekly-timetable-eda8d.firebaseapp.com",
+        projectId: "weekly-timetable-eda8d",
+        storageBucket: "weekly-timetable-eda8d.firebasestorage.app",
+        messagingSenderId: "272799285856",
+        appId: "1:272799285856:web:0938074f4bad4035c27905"
       };
 
       const CONFIG = {
