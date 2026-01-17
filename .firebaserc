@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "weekly-timetable-9a81a"
-  }
+    "default": "weekly-timetable-eda8d",
+    "weekly-timetable": "weekly-timetable-eda8d"
+  },
+  "targets": {},
+  "etags": {}
 }

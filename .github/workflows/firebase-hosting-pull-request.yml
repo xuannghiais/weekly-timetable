@@ -16,5 +16,5 @@ jobs:
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WEEKLY_TIMETABLE_9A81A }}
-          projectId: weekly-timetable-9a81a
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WEEKLY_TIMETABLE_EDA8D }}
+          projectId: weekly-timetable-eda8d

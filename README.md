@@ -53,7 +53,7 @@ firebase deploy --only firestore:rules,hosting
 Workflows in `.github/workflows/` deploy to Hosting on merge to `main`.
 Add these repository secrets:
 - `FIREBASE_SERVICE_ACCOUNT` (service account JSON)
-- `FIREBASE_PROJECT_ID` (e.g. `weekly-timetable-9a81a`)
+- `FIREBASE_PROJECT_ID` (e.g. `weekly-timetable-eda8d`)
 
 ## Notes
 - User documents are stored at `users/{uid}` in Firestore.
