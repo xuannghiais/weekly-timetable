@@ -1289,6 +1289,38 @@
       // ============================================
       const UI = {
         /**
+         * Shows global loading spinner
+         * Technique: Simple state toggle for async feedback
+         */
+        showLoading() {
+          try {
+            const spinner = document.getElementById("loadingSpinner");
+            if (spinner) {
+              spinner.classList.add("show");
+            }
+          } catch (error) {
+            console.error("[UI] Error in showLoading:", error);
+            ErrorHandler.logError(error);
+          }
+        },
+
+        /**
+         * Hides global loading spinner
+         * Technique: Simple state toggle for async feedback
+         */
+        hideLoading() {
+          try {
+            const spinner = document.getElementById("loadingSpinner");
+            if (spinner) {
+              spinner.classList.remove("show");
+            }
+          } catch (error) {
+            console.error("[UI] Error in hideLoading:", error);
+            ErrorHandler.logError(error);
+          }
+        },
+
+        /**
          * Shows a specific view (login/signup/timetable)
          * Technique: DOM manipulation with error handling
          * Try/Catch: Prevents crashes if DOM elements not found
@@ -1700,8 +1732,13 @@
               return;
             }
 
-            // Firebase sign-in
-            await AppStorage.signIn(emailValidation.value, password, remember);
+            UI.showLoading();
+            try {
+              // Firebase sign-in
+              await AppStorage.signIn(emailValidation.value, password, remember);
+            } finally {
+              UI.hideLoading();
+            }
 
             ErrorHandler.showSuccess("Login successful!");
           });
@@ -1763,9 +1800,14 @@
               );
             }
 
-            await AppStorage.auth.sendPasswordResetEmail(
-              emailValidation.value
-            );
+            UI.showLoading();
+            try {
+              await AppStorage.auth.sendPasswordResetEmail(
+                emailValidation.value
+              );
+            } finally {
+              UI.hideLoading();
+            }
             Modal.close();
             ErrorHandler.showSuccess("Password reset email sent!");
           });
@@ -1812,11 +1854,16 @@
 
             if (hasError) return;
 
-            // Create account (Firebase Auth + Firestore)
-            await AppStorage.signUp(
-              emailValidation.value,
-              passwordValidation.value
-            );
+            UI.showLoading();
+            try {
+              // Create account (Firebase Auth + Firestore)
+              await AppStorage.signUp(
+                emailValidation.value,
+                passwordValidation.value
+              );
+            } finally {
+              UI.hideLoading();
+            }
 
             ErrorHandler.showSuccess("Account created successfully!");
           });
