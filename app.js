@@ -20,80 +20,80 @@
        *
        * MODULE STRUCTURE:
        *
-       * 1. CONFIG (Lines ~1130-1164)
+       * 1. CONFIG (Lines ~197-253)
        *    - Central configuration constants
        *    - Technique: Configuration object pattern
        *    - Purpose: Single source of truth for app settings
        *    - Contains: Days config, status enums, limits, colors
        *
-       * 2. UTILS (Lines ~1169-1214)
+       * 2. UTILS (Lines ~254-303)
        *    - Utility functions for common operations
        *    - Technique: Pure functions (no side effects)
        *    - Purpose: Reusable helper methods
        *    - Functions: escapeHtml (XSS prevention), formatTime, getDayIndex, etc.
        *
-       * 3. VALIDATOR (Lines ~1219-1310)
+       * 3. VALIDATOR (Lines ~304-397)
        *    - Input validation with Regular Expressions
        *    - Technique: Regex pattern matching for data validation
        *    - Purpose: Ensure data integrity before processing
        *    - Validates: Email, password, task title, duration
        *    - Returns: Object with {valid: boolean, error: string, value: any}
        *
-       * 4. ERROR_HANDLER (Lines ~1315-1419)
+       * 4. ERROR_HANDLER (Lines ~398-530)
        *    - Comprehensive error handling system
        *    - Technique: Try/catch wrapper (Higher-order function)
        *    - Purpose: Centralized error management and logging
        *    - Features: Error logging, user notifications, field-level errors
        *    - Pattern: Higher-order function that wraps operations
        *
-       * 5. ID_GENERATOR (Lines ~1424-1444)
+       * 5. ID_GENERATOR (Lines ~531-555)
        *    - Unique ID generation system
        *    - Technique: Closure pattern for private state
        *    - Purpose: Generate collision-free task IDs
        *    - Algorithm: Timestamp + incrementing counter
        *
-       * 6. APP_STORAGE (Lines ~1449-1502)
+       * 6. APP_STORAGE (Lines ~556-848)
        *    - Data persistence layer
        *    - Technique: Singleton pattern (single instance)
        *    - Purpose: Centralized data storage and management
        *    - Structure: Firestore sync with in-memory fallback
        *
-       * 7. TASK_MANAGER (Lines ~1507-1727)
+       * 7. TASK_MANAGER (Lines ~849-1110)
        *    - Core business logic for task operations
        *    - Techniques: Algorithm design, validation, state management
        *    - Purpose: CRUD operations and intelligent scheduling
        *    - Features: Auto-balance algorithm, auto-reschedule, statistics
        *
-       * 8. DOM_BUILDER (Lines ~1732-1851)
+       * 8. DOM_BUILDER (Lines ~1111-1236)
        *    - Dynamic HTML generation
        *    - Technique: Factory pattern (creates DOM elements)
        *    - Purpose: Separate presentation from logic
        *    - Creates: Task elements, day cards, calendar days
        *
-       * 9. MODAL (Lines ~1856-1902)
+       * 9. MODAL (Lines ~1237-1287)
        *    - Modal dialog management
        *    - Technique: Singleton pattern with event handling
        *    - Purpose: User interaction for detailed views
        *    - Features: Accessibility (ESC key, focus management)
        *
-       * 10. UI (Lines ~1907-2166)
+       * 10. UI (Lines ~1288-1703)
        *     - User interface orchestration
        *     - Technique: Observer pattern (reactive updates)
        *     - Purpose: View management and rendering
        *     - Functions: View switching, section updates, refresh
        *
-       * 11. HANDLERS (Lines ~2171-2398)
+       * 11. HANDLERS (Lines ~1704-2003)
        *     - Event handling layer
        *     - Technique: Command pattern (encapsulates actions)
        *     - Purpose: User interaction responses
-       *     - Handles: Login, signup, CRUD operations, settings
+       *     - Handles: Login, signup, password reset, CRUD operations, settings
        *
-       * 12. INITIALIZATION (Lines ~2403-2446)
+       * 12. INITIALIZATION (Lines ~2006-2067)
        *     - Application bootstrap
        *     - Technique: DOMContentLoaded event handling
        *     - Purpose: Setup and initialization logic
        *
-       * 13. GLOBAL_ERROR_HANDLER (Lines ~2451-2459)
+       * 13. GLOBAL_ERROR_HANDLER (Lines ~2070-2079)
        *     - Global error catching
        *     - Technique: Window-level error listeners
        *     - Purpose: Catch uncaught errors and promise rejections
@@ -1289,6 +1289,38 @@
       // ============================================
       const UI = {
         /**
+         * Shows global loading spinner
+         * Technique: Simple state toggle for async feedback
+         */
+        showLoading() {
+          try {
+            const spinner = document.getElementById("loadingSpinner");
+            if (spinner) {
+              spinner.classList.add("show");
+            }
+          } catch (error) {
+            console.error("[UI] Error in showLoading:", error);
+            ErrorHandler.logError(error);
+          }
+        },
+
+        /**
+         * Hides global loading spinner
+         * Technique: Simple state toggle for async feedback
+         */
+        hideLoading() {
+          try {
+            const spinner = document.getElementById("loadingSpinner");
+            if (spinner) {
+              spinner.classList.remove("show");
+            }
+          } catch (error) {
+            console.error("[UI] Error in hideLoading:", error);
+            ErrorHandler.logError(error);
+          }
+        },
+
+        /**
          * Shows a specific view (login/signup/timetable)
          * Technique: DOM manipulation with error handling
          * Try/Catch: Prevents crashes if DOM elements not found
@@ -1700,8 +1732,13 @@
               return;
             }
 
-            // Firebase sign-in
-            await AppStorage.signIn(emailValidation.value, password, remember);
+            UI.showLoading();
+            try {
+              // Firebase sign-in
+              await AppStorage.signIn(emailValidation.value, password, remember);
+            } finally {
+              UI.hideLoading();
+            }
 
             ErrorHandler.showSuccess("Login successful!");
           });
@@ -1763,9 +1800,14 @@
               );
             }
 
-            await AppStorage.auth.sendPasswordResetEmail(
-              emailValidation.value
-            );
+            UI.showLoading();
+            try {
+              await AppStorage.auth.sendPasswordResetEmail(
+                emailValidation.value
+              );
+            } finally {
+              UI.hideLoading();
+            }
             Modal.close();
             ErrorHandler.showSuccess("Password reset email sent!");
           });
@@ -1812,11 +1854,16 @@
 
             if (hasError) return;
 
-            // Create account (Firebase Auth + Firestore)
-            await AppStorage.signUp(
-              emailValidation.value,
-              passwordValidation.value
-            );
+            UI.showLoading();
+            try {
+              // Create account (Firebase Auth + Firestore)
+              await AppStorage.signUp(
+                emailValidation.value,
+                passwordValidation.value
+              );
+            } finally {
+              UI.hideLoading();
+            }
 
             ErrorHandler.showSuccess("Account created successfully!");
           });
@@ -2056,77 +2103,77 @@
        *
        * MODULE BREAKDOWN:
        *
-       * CONFIG Module (Lines 1294-1328)
+       * CONFIG Module (Lines 197-253)
        * - Purpose: Centralized configuration management
        * - Contents: Days array, status enums, limits, color mappings
        * - Technique: Configuration object pattern
        * - Benefit: Single source of truth, easy to modify settings
        *
-       * UTILS Module (Lines 1333-1378)
+       * UTILS Module (Lines 254-303)
        * - Purpose: Reusable utility functions
        * - Functions: escapeHtml, formatTime, getDayIndex, getNextDay, getDayAhead
        * - Technique: Pure functions (no side effects)
        * - Benefit: Code reusability, testability
        *
-       * VALIDATOR Module (Lines 1383-1474)
+       * VALIDATOR Module (Lines 304-397)
        * - Purpose: Input validation with Regular Expressions
        * - Functions: validateEmail, validatePassword, validateTaskTitle, validateDuration
        * - Technique: Regex pattern matching
        * - Benefit: Data integrity, security, user feedback
        *
-       * ERROR_HANDLER Module (Lines 1479-1583)
+       * ERROR_HANDLER Module (Lines 398-530)
        * - Purpose: Centralized error management
        * - Functions: handle (wrapper), logError, showUserError, showSuccess, showFieldError
        * - Technique: Higher-order functions, try/catch wrapping
        * - Benefit: Robust error handling, user experience
        *
-       * ID_GENERATOR Module (Lines 1588-1608)
+       * ID_GENERATOR Module (Lines 531-555)
        * - Purpose: Unique ID generation
        * - Technique: Closure pattern with private counter
        * - Benefit: Collision-free IDs, encapsulation
        *
-       * APP_STORAGE Module (Lines 1613-1666)
+       * APP_STORAGE Module (Lines 556-848)
        * - Purpose: Data persistence layer
        * - Technique: Singleton pattern
        * - Benefit: Centralized data management, state consistency
        * - Storage: Firestore persistence with in-memory fallback
        *
-       * TASK_MANAGER Module (Lines 1671-1891)
+       * TASK_MANAGER Module (Lines 849-1110)
        * - Purpose: Core business logic
        * - Functions: addTask, deleteTask, updateStatus, autoBalance, rescheduleTask, statistics
        * - Technique: Algorithm design, state management
        * - Benefit: Complex logic encapsulation, smart scheduling
        *
-       * DOM_BUILDER Module (Lines 1896-2015)
+       * DOM_BUILDER Module (Lines 1111-1236)
        * - Purpose: Dynamic HTML generation
        * - Functions: createTaskElement, createDayCard, createCalendarDay
        * - Technique: Factory pattern
        * - Benefit: Consistent UI elements, separation of concerns
        *
-       * MODAL Module (Lines 2020-2066)
+       * MODAL Module (Lines 1237-1287)
        * - Purpose: Modal dialog management
        * - Functions: open, close, handleKeydown
        * - Technique: Singleton pattern, event handling
        * - Benefit: User interaction, accessibility
        *
-       * UI Module (Lines 2071-2417)
+       * UI Module (Lines 1288-1703)
        * - Purpose: User interface orchestration
        * - Functions: showView, showSection, updateHomepage, updateCalendar, updateTodoList, updateStatistics, refresh, showDayDetail
        * - Technique: Observer pattern
        * - Benefit: Reactive UI updates, view management
        *
-       * HANDLERS Module (Lines 2422-2644)
+       * HANDLERS Module (Lines 1704-2003)
        * - Purpose: Event handling
-       * - Functions: handleLogin, loginAsGuest, handleSignup, handleAddTask, handleDeleteTask, handleStatusChange, handleUpdateSettings, handleClearData, handleLogout
+       * - Functions: handleLogin, loginAsGuest, showPasswordReset, handlePasswordReset, handleSignup, handleAddTask, handleDeleteTask, handleStatusChange, handleUpdateSettings, handleClearData, handleLogout
        * - Technique: Command pattern
        * - Benefit: Organized event responses, user actions
        *
-       * INITIALIZATION Module (Lines 2649-2692)
+       * INITIALIZATION Module (Lines 2006-2067)
        * - Purpose: Application bootstrap
        * - Technique: DOMContentLoaded event handling
        * - Benefit: Proper initialization sequence
        *
-       * GLOBAL_ERROR_HANDLER Module (Lines 2697-2705)
+       * GLOBAL_ERROR_HANDLER Module (Lines 2070-2079)
        * - Purpose: Catch uncaught errors
        * - Technique: Window-level error listeners
        * - Benefit: Prevents app crashes, error logging
@@ -2144,45 +2191,45 @@
        *
        * LOCATIONS OF TRY/CATCH:
        *
-       * 1. ErrorHandler.handle() (Lines 1486-1495)
+       * 1. ErrorHandler.handle() (Lines 407-435)
        *    - Wraps any operation in try/catch
        *    - Logs errors and shows user messages
        *    - Returns fallback value on error
        *
-       * 2. UI.showView() (Lines 2077-2095)
+       * 2. UI.showView() (Lines 1328-1348)
        *    - Prevents crashes if DOM elements missing
        *    - Logs warnings for debugging
        *
-       * 3. UI.showSection() (Lines 2102-2123)
+       * 3. UI.showSection() (Lines 1355-1380)
        *    - Handles missing sections gracefully
        *    - Validates event object before accessing
        *
-       * 4. UI.updateHomepage() (Lines 2130-2158)
+       * 4. UI.updateHomepage() (Lines 1387-1418)
        *    - Protects rendering loop
        *    - Shows user error if update fails
        *
-       * 5. UI.updateCalendar() (Lines 2165-2189)
+       * 5. UI.updateCalendar() (Lines 1426-1454)
        *    - Robust calendar rendering
        *    - Error isolation per view
        *
-       * 6. UI.updateTodoList() (Lines 2196-2281)
+       * 6. UI.updateTodoList() (Lines 1461-1546)
        *    - Handles task list rendering errors
        *    - Prevents partial updates
        *
-       * 7. UI.updateStatistics() (Lines 2288-2329)
+       * 7. UI.updateStatistics() (Lines 1554-1602)
        *    - Safe statistics calculation
        *    - Template literal error handling
        *
-       * 8. UI.showDayDetail() (Lines 2350-2416)
+       * 8. UI.showDayDetail() (Lines 1624-1699)
        *    - Modal rendering protection
        *    - Dynamic content error handling
        *
-       * 9. All Handler functions (Lines 2422-2644)
+       * 9. All Handler functions (Lines 1704-2003)
        *    - Every user action wrapped in ErrorHandler.handle()
        *    - Validation errors caught and displayed
        *    - Success messages on completion
        *
-       * 10. Global error handlers (Lines 2697-2705)
+       * 10. Global error handlers (Lines 2070-2079)
        *     - Window error event listener
        *     - Unhandled promise rejection handler
        *     - Catches any missed errors
@@ -2199,7 +2246,7 @@
        *
        * INPUT VALIDATION WITH REGEX:
        *
-       * 1. Email Validation (Line 1389)
+       * 1. Email Validation (Line 311)
        *    Pattern: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
        *    - Validates email format
        *    - Allows alphanumeric, dots, underscores, hyphens
@@ -2207,7 +2254,7 @@
        *    - Domain extension minimum 2 characters
        *    Example: user@example.com ✓, invalid@email ✗
        *
-       * 2. Password Strength (Lines 1405-1406)
+       * 2. Password Strength (Lines 326-335)
        *    Pattern 1: /[A-Z]/
        *    - Checks for at least one uppercase letter
        *    Pattern 2: /\d/
@@ -2215,7 +2262,7 @@
        *    Requirements: min 8 characters + uppercase + number
        *    Example: Password1 ✓, password ✗
        *
-       * 3. HTML Tag Detection (Line 1446)
+       * 3. HTML Tag Detection (Line 363)
        *    Pattern: /<[^>]*>/g
        *    - Detects HTML tags in task titles
        *    - Prevents HTML injection (XSS)
@@ -2258,15 +2305,15 @@
        * ============================================
        *
        * HIGHER-ORDER FUNCTIONS:
-       * - forEach(): Iterate arrays (Lines 2080, 2142, 2176)
-       * - filter(): Select items by condition (Lines 1859, 1875)
-       * - reduce(): Calculate totals (Lines 1851, 1882)
-       * - find(): Locate specific item (Lines 1727, 2359)
+       * - forEach(): Iterate arrays (Lines 1331, 1399, 1437)
+       * - filter(): Select items by condition (Lines 959, 1049)
+       * - reduce(): Calculate totals (Lines 1054, 1094)
+       * - find(): Locate specific item (Lines 908, 1038, 1634)
        * - map(): Transform data (implicit in various places)
-       * - sort(): Order by criteria (Line 1780)
+       * - sort(): Order by criteria (Line 964)
        *
        * CLOSURES:
-       * - IDGenerator: Private counter variable (Lines 1588-1608)
+       * - IDGenerator: Private counter variable (Lines 531-549)
        * - Maintains state without global variables
        * - Encapsulation of private data
        *
@@ -2279,7 +2326,7 @@
        *
        * ALGORITHMS:
        *
-       * Auto-Balance Algorithm (Lines 1759-1810):
+       * Auto-Balance Algorithm (Lines 943-1004):
        * 1. Check if day exceeds limit
        * 2. Find tasks that can be moved
        * 3. Move largest movable task to next day
@@ -2287,7 +2334,7 @@
        * 5. Max 7 iterations (prevents infinite loop)
        * 6. Alert user if cannot fit all tasks
        *
-       * Auto-Reschedule Algorithm (Lines 1822-1843):
+       * Auto-Reschedule Algorithm (Lines 1016-1042):
        * 1. Calculate target day (current + 3)
        * 2. Create new task with "RESCHEDULED:" prefix
        * 3. Set status to not-completed
@@ -2299,7 +2346,7 @@
        * ============================================
        *
        * XSS PREVENTION:
-       * - Utils.escapeHtml() (Lines 1338-1342)
+       * - Utils.escapeHtml() (Lines 261-265)
        * - Uses DOM textContent for safe escaping
        * - Applied to all user input before display
        * - Prevents HTML/JavaScript injection
@@ -2311,7 +2358,7 @@
        * - Maximum length limits enforced
        *
        * STATE VALIDATION:
-       * - Prevents invalid state transitions (Lines 1732-1736)
+       * - Prevents invalid state transitions (Lines 913-918)
        * - Completed tasks cannot be marked missed
        * - Maintains data integrity
        *
@@ -2320,13 +2367,13 @@
        * ============================================
        *
        * KEYBOARD NAVIGATION:
-       * - Enter key for login (Lines 2675-2680)
-       * - Enter key for signup (Lines 2685-2690)
-       * - Enter key for password reset (Lines 2695-2700)
-       * - ESC key closes modals (Lines 2054-2058)
+       * - Enter key for login (Lines 2029-2036)
+       * - Enter key for signup (Lines 2039-2046)
+       * - Enter key for password reset (Lines 2049-2055)
+       * - ESC key closes modals (Lines 1280-1283)
        *
        * FOCUS MANAGEMENT:
-       * - Auto-focus first input in modals (Lines 2026-2029)
+       * - Auto-focus first input in modals (Lines 1252-1256)
        * - Tab navigation support
        * - Clear focus indicators in CSS
        *
@@ -2339,10 +2386,10 @@
        * CODE STATISTICS:
        * ============================================
        *
-       * Total Lines: ~2700+
-       * JavaScript Lines: ~1600+
-       * CSS Lines: ~850+
-       * HTML Lines: ~250+
+       * Total Lines (project): ~3760
+       * JavaScript Lines (app.js): ~2460
+       * CSS Lines (styles.css): ~900
+       * HTML Lines (index.html): ~400
        *
        * Modules: 13
        * Functions: 50+
