@@ -1014,7 +1014,6 @@
          * 4. Trigger auto-balance for new day
          */
         rescheduleTask(originalTask) {
-          const currentDayIndex = Utils.getDayIndex(originalTask.day);
           const newDay = Utils.getDayAhead(
             originalTask.day,
             CONFIG.RESCHEDULE_DAYS_AHEAD
